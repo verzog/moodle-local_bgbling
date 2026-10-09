@@ -51,6 +51,16 @@ if ($hassiteconfig) {
             ''
         ));
 
+        $ownvideo = background::areas_with_own_video();
+        if ($ownvideo) {
+            $names = array_map(fn($area) => get_string('area_' . $area, 'local_bgbling'), $ownvideo);
+            $settings->add(new admin_setting_description(
+                'local_bgbling/ownvideonotice',
+                '',
+                $OUTPUT->notification(get_string('ownvideonotice', 'local_bgbling', implode(', ', $names)), 'info', false)
+            ));
+        }
+
         $settings->add(new admin_setting_configselect(
             'local_bgbling/source',
             new lang_string('source', 'local_bgbling'),

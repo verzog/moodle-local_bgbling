@@ -70,8 +70,20 @@ final class background {
         'login' => ['login-index'],
         'frontpage' => ['site-index'],
         'dashboard' => ['my-index'],
-        'mycourses' => ['my-courses'],
+        'mycourses' => ['my-index'],
         'course' => ['course-view-*'],
+    ];
+
+    /**
+     * Page layouts that tell apart areas sharing a page type.
+     *
+     * Moodle gives the dashboard and My courses the same page type (my-index); only the layout differs.
+     *
+     * @var string[]
+     */
+    public const AREA_LAYOUTS = [
+        'dashboard' => 'mydashboard',
+        'mycourses' => 'mycourses',
     ];
 
     /** @var string[] Page layouts that never get a background. */
@@ -99,11 +111,14 @@ final class background {
         if (in_array($page->pagelayout, self::EXCLUDED_LAYOUTS, true)) {
             return false;
         }
-        $patterns = self::get_page_patterns($config->areas ?? '', $config->pagetypes ?? '');
-        if (!self::page_type_matches($page->pagetype, $patterns)) {
-            return false;
+        $area = self::get_area($page);
+        if ($area === null) {
+            $patterns = self::get_page_patterns('', $config->pagetypes ?? '');
+            if (!self::page_type_matches($page->pagetype, $patterns)) {
+                return false;
+            }
         }
-        return self::get_source(self::get_area($page)) !== null;
+        return self::get_source($area) !== null;
     }
 
     /**
@@ -118,11 +133,34 @@ final class background {
     public static function get_area(moodle_page $page): ?string {
         $ticked = array_map('trim', explode(',', (string) get_config(self::COMPONENT, 'areas')));
         foreach (self::AREAS as $area => $patterns) {
-            if (in_array($area, $ticked, true) && self::page_type_matches($page->pagetype, $patterns)) {
+            if (in_array($area, $ticked, true) && self::area_matches($area, $page)) {
                 return $area;
             }
         }
         return null;
+    }
+
+    /**
+     * Whether a page is in a named area, by page type and, where needed, page layout.
+     *
+     * @param string $area An AREAS key.
+     * @param moodle_page $page
+     * @return bool
+     */
+    public static function area_matches(string $area, moodle_page $page): bool {
+        if (!self::page_type_matches($page->pagetype, self::AREAS[$area])) {
+            return false;
+        }
+        return !isset(self::AREA_LAYOUTS[$area]) || $page->pagelayout === self::AREA_LAYOUTS[$area];
+    }
+
+    /**
+     * Returns the locations that use their own video instead of the default.
+     *
+     * @return string[] AREAS keys.
+     */
+    public static function areas_with_own_video(): array {
+        return array_values(array_filter(array_keys(self::AREAS), [self::class, 'has_own_video']));
     }
 
     /**
