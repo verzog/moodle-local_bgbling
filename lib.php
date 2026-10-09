@@ -75,3 +75,15 @@ function local_bgbling_pluginfile($course, $cm, $context, $filearea, $args, $for
     $options['immutable'] = true;
     send_stored_file($file, YEARSECS, 0, $forcedownload, $options);
 }
+
+/**
+ * Maps the plugin's icons to Font Awesome, for themes that use it.
+ *
+ * @return string[] Icon identifier => Font Awesome class.
+ */
+function local_bgbling_get_fontawesome_icon_map() {
+    return [
+        'local_bgbling:soundoff' => 'fa-volume-xmark',
+        'local_bgbling:soundon' => 'fa-volume-high',
+    ];
+}

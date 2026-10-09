@@ -24,6 +24,7 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+import Config from 'core/config';
 import Log from 'core/log';
 
 const SELECTORS = {
@@ -31,7 +32,14 @@ const SELECTORS = {
     MEDIA: '.local-bgbling-media[data-src]',
     LOGIN_PANEL: '.login-layout-left',
     FRAME: '.local-bgbling-frame',
+    SOUND_BUTTON: '.local-bgbling-sound',
 };
+
+/** Cookie holding the visitor's sound choice. */
+const SOUND_COOKIE = 'local_bgbling_sound';
+
+/** How long the sound choice is remembered: one year, in seconds. */
+const SOUND_COOKIE_LIFETIME = 365 * 24 * 60 * 60;
 
 /** Aspect ratio of YouTube and Vimeo players. */
 const FRAME_RATIO = 16 / 9;
@@ -41,19 +49,103 @@ const CONTAINED_CLASS = 'local-bgbling-contained';
 const HOST_CLASS = 'local-bgbling-host';
 
 /**
+ * Reads the visitor's remembered sound choice.
+ *
+ * @returns {Boolean} Whether the visitor last turned the sound on.
+ */
+const soundPreferred = () => document.cookie.split('; ').includes(`${SOUND_COOKIE}=on`);
+
+/**
+ * Remembers the visitor's sound choice.
+ *
+ * A cookie rather than local storage, because Moodle clears local storage at each login and
+ * whenever its JavaScript caches are purged.
+ *
+ * @param {Boolean} on Whether the sound is on.
+ */
+const rememberSound = (on) => {
+    const path = new URL(Config.wwwroot).pathname.replace(/\/?$/, '/');
+    const secure = window.location.protocol === 'https:' ? '; Secure' : '';
+    document.cookie = `${SOUND_COOKIE}=${on ? 'on' : 'off'}; Max-Age=${SOUND_COOKIE_LIFETIME}; Path=${path}; SameSite=Lax${secure}`;
+};
+
+/**
+ * Sets up the button that turns the video's sound on and off.
+ *
+ * Browsers refuse to start a video with sound before the visitor has interacted with the page, so the
+ * video always starts muted. If the visitor turned the sound on before, it comes back on their first
+ * click or key press anywhere on the page.
+ *
+ * @param {HTMLElement} media The video element.
+ * @returns {Object} Callbacks for when the video starts and stops playing.
+ */
+const setupSound = (media) => {
+    const button = document.querySelector(SELECTORS.SOUND_BUTTON);
+    if (!button || media.tagName !== 'VIDEO') {
+        return {playing: () => null, stopped: () => null};
+    }
+
+    const setSound = (on) => {
+        media.muted = !on;
+        button.setAttribute('aria-pressed', on ? 'true' : 'false');
+    };
+    button.addEventListener('click', () => {
+        const on = media.muted;
+        setSound(on);
+        rememberSound(on);
+    });
+
+    const unmuteOnFirstGesture = (e) => {
+        if (button.contains(e.target)) {
+            // The button's own click handler decides.
+            return;
+        }
+        document.removeEventListener('pointerdown', unmuteOnFirstGesture, true);
+        document.removeEventListener('keydown', unmuteOnFirstGesture, true);
+        if (soundPreferred() && !button.hidden) {
+            setSound(true);
+        }
+    };
+
+    return {
+        playing: () => {
+            button.hidden = false;
+            if (!soundPreferred()) {
+                return;
+            }
+            if (navigator.userActivation && navigator.userActivation.hasBeenActive) {
+                setSound(true);
+            } else {
+                document.addEventListener('pointerdown', unmuteOnFirstGesture, true);
+                document.addEventListener('keydown', unmuteOnFirstGesture, true);
+            }
+        },
+        stopped: () => {
+            button.hidden = true;
+            setSound(false);
+        },
+    };
+};
+
+/**
  * Loads and plays the media element.
  *
  * @param {HTMLElement} root The background container.
  * @param {HTMLElement} media The video or iframe element.
+ * @param {Object} sound Sound button callbacks from setupSound.
  */
-const start = (root, media) => {
+const start = (root, media, sound) => {
     if (media.tagName === 'VIDEO') {
         if (!media.getAttribute('src')) {
             media.disablePictureInPicture = true;
             media.setAttribute('src', media.dataset.src);
         }
         // Muted autoplay can still be refused (e.g. data saver); the poster then stays visible.
-        media.play().then(() => root.classList.add(PLAYING_CLASS)).catch(() => root.classList.remove(PLAYING_CLASS));
+        media.play().then(() => {
+            root.classList.add(PLAYING_CLASS);
+            sound.playing();
+            return true;
+        }).catch(() => root.classList.remove(PLAYING_CLASS));
         return;
     }
     if (!media.getAttribute('src')) {
@@ -68,9 +160,11 @@ const start = (root, media) => {
  *
  * @param {HTMLElement} root The background container.
  * @param {HTMLElement} media The video or iframe element.
+ * @param {Object} sound Sound button callbacks from setupSound.
  */
-const stop = (root, media) => {
+const stop = (root, media, sound) => {
     root.classList.remove(PLAYING_CLASS);
+    sound.stopped();
     if (media.tagName === 'VIDEO') {
         media.pause();
         return;
@@ -136,6 +230,7 @@ export const init = ({smallscreen, respectmotion}) => {
     // Move before loading anything: moving an iframe in the page reloads it.
     const panel = placeInLoginPanel(root);
     coverWithFrame(root);
+    const sound = setupSound(media);
 
     // Each condition that stops the video, with the reason logged for admins diagnosing a missing video.
     const conditions = [];
@@ -171,9 +266,9 @@ export const init = ({smallscreen, respectmotion}) => {
         lastreason = reason;
         if (blocking) {
             Log.info(`local_bgbling: background video not played because ${reason}.`);
-            stop(root, media);
+            stop(root, media, sound);
         } else {
-            start(root, media);
+            start(root, media, sound);
         }
     };
 

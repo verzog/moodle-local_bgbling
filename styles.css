@@ -95,3 +95,73 @@ body.local-bgbling-active.pagelayout-login:not(:has(.login-layout-left)) #page,
 body.local-bgbling-active.pagelayout-login:not(:has(.login-layout-left)) #region-main {
     background: transparent;
 }
+
+/* Page title, breadcrumbs and page tabs sit directly on the video: recolour them via Bootstrap's variables. */
+body.local-bgbling-active.local-bgbling-text-light #page-header,
+body.local-bgbling-active.local-bgbling-text-light .secondary-navigation {
+    --bs-body-color: #fff;
+    --bs-emphasis-color: #fff;
+    --bs-heading-color: #fff;
+    --bs-secondary-color: rgba(255, 255, 255, 0.85);
+    --bs-link-color-rgb: 255, 255, 255;
+    --bs-link-hover-color-rgb: 255, 255, 255;
+    color: #fff;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.85);
+}
+
+body.local-bgbling-active.local-bgbling-text-light #page-header .breadcrumb {
+    --bs-breadcrumb-divider-color: rgba(255, 255, 255, 0.85);
+    --bs-breadcrumb-item-active-color: #fff;
+}
+
+body.local-bgbling-active.local-bgbling-text-light .secondary-navigation .nav {
+    --bs-nav-link-color: #fff;
+    --bs-nav-link-hover-color: #fff;
+    --bs-nav-tabs-link-active-color: #fff;
+}
+
+body.local-bgbling-active.local-bgbling-text-dark #page-header,
+body.local-bgbling-active.local-bgbling-text-dark .secondary-navigation {
+    --bs-body-color: #1d2125;
+    --bs-emphasis-color: #1d2125;
+    --bs-heading-color: #1d2125;
+    --bs-secondary-color: rgba(29, 33, 37, 0.8);
+    --bs-link-color-rgb: 29, 33, 37;
+    --bs-link-hover-color-rgb: 29, 33, 37;
+    color: #1d2125;
+    text-shadow: 0 1px 3px rgba(255, 255, 255, 0.85);
+}
+
+body.local-bgbling-active.local-bgbling-text-dark #page-header .breadcrumb {
+    --bs-breadcrumb-divider-color: rgba(29, 33, 37, 0.8);
+    --bs-breadcrumb-item-active-color: #1d2125;
+}
+
+body.local-bgbling-active.local-bgbling-text-dark .secondary-navigation .nav {
+    --bs-nav-link-color: #1d2125;
+    --bs-nav-link-hover-color: #1d2125;
+    --bs-nav-tabs-link-active-color: #1d2125;
+}
+
+/* Sound button: outside the decorative layer so it can be clicked and reached by keyboard. */
+.local-bgbling-sound {
+    position: fixed;
+    bottom: 1rem;
+    left: 1rem;
+    z-index: 1030;
+    opacity: 0.8;
+}
+
+.local-bgbling-sound:hover,
+.local-bgbling-sound:focus {
+    opacity: 1;
+}
+
+.local-bgbling-sound[aria-pressed="true"] .local-bgbling-sound-off,
+.local-bgbling-sound[aria-pressed="false"] .local-bgbling-sound-on {
+    display: none;
+}
+
+.local-bgbling-sound .icon {
+    margin: 0;
+}

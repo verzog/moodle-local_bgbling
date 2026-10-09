@@ -17,6 +17,12 @@ rather than being tied to one.
 
 - **Pages:** tick the login page, site home, dashboard, My courses and course pages, or list
   extra page types (with `*` wildcards) for advanced use.
+- **Readable titles:** the page title, breadcrumbs and page tabs sit directly on the video, so
+  they are recoloured light (default) or dark, with a soft shadow, or left to the theme.
+- **Sound (optional):** for uploaded files and direct links, a speaker button lets visitors turn
+  the sound on. Browsers do not allow sound to start on its own, so the video starts muted; the
+  choice is remembered in a cookie, and on later pages the sound returns on the first click or key
+  press. YouTube and Vimeo stay muted.
 - **Tint:** a colour layer with adjustable strength (0–90%) over the video, so text stays
   readable.
 - **Poster image:** a still image shown while the video loads, if the browser blocks autoplay,

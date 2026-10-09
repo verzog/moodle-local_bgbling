@@ -22,6 +22,8 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+$string['allowsound'] = 'Allow sound';
+$string['allowsound_desc'] = 'Show a speaker button so visitors can turn on the video\'s sound. Browsers do not allow sound to start on its own, so the video always starts muted; the visitor\'s choice is remembered in their browser, and on later pages the sound comes back on their first click or key press. Works with uploaded files and direct video links, not YouTube or Vimeo.';
 $string['appearanceheading'] = 'Appearance';
 $string['area_course'] = 'Course pages';
 $string['area_dashboard'] = 'Dashboard';
@@ -54,11 +56,17 @@ $string['posteronsmallscreens_desc'] = 'On screens narrower than 768 pixels (mos
 $string['privacy:metadata'] = 'The Background video plugin does not store any personal data. If a YouTube, Vimeo or externally hosted video is used, visitors\' browsers connect to that service to play it.';
 $string['respectreducedmotion'] = 'Respect the reduce-motion preference';
 $string['respectreducedmotion_desc'] = 'Do not play the video for visitors whose device asks websites to reduce motion; they see the poster image instead. Many people set this, sometimes without knowing: for example, turning off animation effects in Windows turns it on. Some people set it because motion on screen makes them unwell, so leaving this on is the more accessible choice.';
+$string['soundbutton'] = 'Background video sound';
 $string['source'] = 'Video source';
 $string['source_desc'] = 'Use a video address (YouTube, Vimeo or a direct video file link), or a video file uploaded here.';
 $string['source_file'] = 'Uploaded file';
 $string['source_url'] = 'Video address (URL)';
 $string['sourceheading'] = 'Video';
+$string['textcolour'] = 'Text colour over the video';
+$string['textcolour_dark'] = 'Dark';
+$string['textcolour_desc'] = 'Colour of the page title, breadcrumbs and page tabs, which sit directly on the video. Light suits a dark tint and Dark suits a light tint. Theme default leaves the theme\'s colours unchanged.';
+$string['textcolour_light'] = 'Light';
+$string['textcolour_theme'] = 'Theme default';
 $string['videofile'] = 'Video file';
 $string['videofile_desc'] = 'An MP4 (H.264) file plays in every current browser. WebM is usually smaller. The file is served to everyone, including visitors who are not logged in, so do not upload anything private.';
 $string['videourl'] = 'Video address';

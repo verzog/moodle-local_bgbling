@@ -31,6 +31,7 @@
     * overlaycolour - CSS colour of the tint layer
     * overlayopacity - opacity of the tint layer, 0 to 0.9
     * respectmotion - whether to hide the video for visitors who prefer reduced motion
+    * hassound - whether to show the button that turns the video's sound on and off
 
     Example context (json):
     {
@@ -40,7 +41,8 @@
         "hasoverlay": true,
         "overlaycolour": "#000000",
         "overlayopacity": "0.40",
-        "respectmotion": true
+        "respectmotion": true,
+        "hassound": true
     }
 }}
 <div class="local-bgbling{{#respectmotion}} local-bgbling-respectmotion{{/respectmotion}}" aria-hidden="true"{{#posterurl}} style="background-image: url('{{posterurl}}');"{{/posterurl}}>
@@ -60,3 +62,10 @@
     <div class="local-bgbling-overlay" style="background-color: {{overlaycolour}}; opacity: {{overlayopacity}};"></div>
     {{/hasoverlay}}
 </div>
+{{#hassound}}
+<button type="button" class="local-bgbling-sound btn btn-dark" aria-pressed="false"
+    aria-label="{{#str}}soundbutton, local_bgbling{{/str}}" title="{{#str}}soundbutton, local_bgbling{{/str}}" hidden>
+    <span class="local-bgbling-sound-off">{{#pix}}soundoff, local_bgbling{{/pix}}</span>
+    <span class="local-bgbling-sound-on">{{#pix}}soundon, local_bgbling{{/pix}}</span>
+</button>
+{{/hassound}}

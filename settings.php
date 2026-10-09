@@ -91,6 +91,14 @@ if ($hassiteconfig) {
         ));
         $settings->hide_if('local_bgbling/videofile', 'local_bgbling/source', 'eq', background::SOURCE_URL);
 
+        $settings->add(new admin_setting_configcheckbox(
+            'local_bgbling/allowsound',
+            new lang_string('allowsound', 'local_bgbling'),
+            new lang_string('allowsound_desc', 'local_bgbling'),
+            0
+        ));
+        $settings->hide_if('local_bgbling/allowsound', 'local_bgbling/source', 'eq', background::SOURCE_URL);
+
         $settings->add(new admin_setting_configstoredfile(
             'local_bgbling/poster',
             new lang_string('poster', 'local_bgbling'),
@@ -175,6 +183,18 @@ if ($hassiteconfig) {
             new lang_string('overlayopacity_desc', 'local_bgbling'),
             40,
             $opacities
+        ));
+
+        $settings->add(new admin_setting_configselect(
+            'local_bgbling/textcolour',
+            new lang_string('textcolour', 'local_bgbling'),
+            new lang_string('textcolour_desc', 'local_bgbling'),
+            background::TEXT_LIGHT,
+            [
+                background::TEXT_LIGHT => new lang_string('textcolour_light', 'local_bgbling'),
+                background::TEXT_DARK => new lang_string('textcolour_dark', 'local_bgbling'),
+                background::TEXT_THEME => new lang_string('textcolour_theme', 'local_bgbling'),
+            ]
         ));
 
         $settings->add(new admin_setting_configtextarea(

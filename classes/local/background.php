@@ -50,6 +50,15 @@ final class background {
     /** @var string Body class added to pages that show the background. */
     public const BODY_CLASS = 'local-bgbling-active';
 
+    /** @var string Text colour setting: white text with a dark shadow. */
+    public const TEXT_LIGHT = 'light';
+
+    /** @var string Text colour setting: dark text with a light shadow. */
+    public const TEXT_DARK = 'dark';
+
+    /** @var string Text colour setting: leave the theme's colours alone. */
+    public const TEXT_THEME = 'theme';
+
     /**
      * Named areas the admin can tick, mapped to page type patterns.
      *
@@ -204,6 +213,31 @@ final class background {
     public static function respect_reduced_motion(): bool {
         $setting = get_config(self::COMPONENT, 'respectreducedmotion');
         return $setting === false || !empty($setting);
+    }
+
+    /**
+     * Returns the colour scheme for page titles that sit directly on the video.
+     *
+     * @return string One of the TEXT_ constants; light when never saved.
+     */
+    public static function get_text_colour(): string {
+        $setting = get_config(self::COMPONENT, 'textcolour');
+        if (in_array($setting, [self::TEXT_DARK, self::TEXT_THEME], true)) {
+            return $setting;
+        }
+        return self::TEXT_LIGHT;
+    }
+
+    /**
+     * Whether visitors may turn on the video's sound.
+     *
+     * Only uploaded files and direct links: YouTube and Vimeo players stay muted.
+     *
+     * @param video_source $source
+     * @return bool
+     */
+    public static function sound_allowed(video_source $source): bool {
+        return $source->is_native() && !empty(get_config(self::COMPONENT, 'allowsound'));
     }
 
     /**
