@@ -141,6 +141,19 @@ final class background_test extends \advanced_testcase {
     }
 
     /**
+     * The reduce-motion preference is respected unless the admin turns it off.
+     */
+    public function test_respect_reduced_motion(): void {
+        $this->resetAfterTest();
+        unset_config('respectreducedmotion', 'local_bgbling');
+        $this->assertTrue(background::respect_reduced_motion(), 'On when never saved.');
+        set_config('respectreducedmotion', 0, 'local_bgbling');
+        $this->assertFalse(background::respect_reduced_motion());
+        set_config('respectreducedmotion', 1, 'local_bgbling');
+        $this->assertTrue(background::respect_reduced_motion());
+    }
+
+    /**
      * Stores a dummy file in one of the plugin's file areas.
      *
      * @param string $area

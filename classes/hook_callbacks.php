@@ -82,10 +82,14 @@ final class hook_callbacks {
             'hasoverlay' => $opacity > 0,
             'overlaycolour' => background::get_overlay_colour(),
             'overlayopacity' => sprintf('%.2F', $opacity),
+            'respectmotion' => background::respect_reduced_motion(),
         ];
         $hook->add_html($hook->renderer->render_from_template('local_bgbling/background', $context));
 
         $smallscreen = get_config('local_bgbling', 'posteronsmallscreens') ? background::SMALL_SCREEN_BREAKPOINT : 0;
-        $page->requires->js_call_amd('local_bgbling/background', 'init', [['smallscreen' => $smallscreen]]);
+        $page->requires->js_call_amd('local_bgbling/background', 'init', [[
+            'smallscreen' => $smallscreen,
+            'respectmotion' => background::respect_reduced_motion(),
+        ]]);
     }
 }

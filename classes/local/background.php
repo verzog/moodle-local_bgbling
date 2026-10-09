@@ -195,6 +195,18 @@ final class background {
     }
 
     /**
+     * Whether to skip the video for visitors whose browser asks for reduced motion.
+     *
+     * On unless the admin has turned the setting off.
+     *
+     * @return bool
+     */
+    public static function respect_reduced_motion(): bool {
+        $setting = get_config(self::COMPONENT, 'respectreducedmotion');
+        return $setting === false || !empty($setting);
+    }
+
+    /**
      * Returns the admin's custom CSS, made safe to place inside a style element.
      *
      * @return string

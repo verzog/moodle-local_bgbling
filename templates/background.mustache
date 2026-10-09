@@ -30,6 +30,7 @@
     * hasoverlay - whether to draw the tint layer
     * overlaycolour - CSS colour of the tint layer
     * overlayopacity - opacity of the tint layer, 0 to 0.9
+    * respectmotion - whether to hide the video for visitors who prefer reduced motion
 
     Example context (json):
     {
@@ -38,10 +39,11 @@
         "posterurl": "https://example.com/poster.jpg",
         "hasoverlay": true,
         "overlaycolour": "#000000",
-        "overlayopacity": "0.40"
+        "overlayopacity": "0.40",
+        "respectmotion": true
     }
 }}
-<div class="local-bgbling" aria-hidden="true"{{#posterurl}} style="background-image: url('{{posterurl}}');"{{/posterurl}}>
+<div class="local-bgbling{{#respectmotion}} local-bgbling-respectmotion{{/respectmotion}}" aria-hidden="true"{{#posterurl}} style="background-image: url('{{posterurl}}');"{{/posterurl}}>
     {{#isnative}}
     <video class="local-bgbling-media local-bgbling-video" data-src="{{src}}"
         {{#posterurl}}poster="{{posterurl}}"{{/posterurl}} muted loop playsinline
