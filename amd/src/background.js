@@ -39,7 +39,6 @@ const FRAME_RATIO = 16 / 9;
 const PLAYING_CLASS = 'local-bgbling-playing';
 const CONTAINED_CLASS = 'local-bgbling-contained';
 const HOST_CLASS = 'local-bgbling-host';
-const ACTIVE_BODY_CLASS = 'local-bgbling-active';
 
 /**
  * Loads and plays the media element.
@@ -118,8 +117,6 @@ const placeInLoginPanel = (root) => {
     panel.classList.add(HOST_CLASS);
     panel.prepend(root);
     root.classList.add(CONTAINED_CLASS);
-    // The full-page transparency rules are not wanted when the video only fills the panel.
-    document.body.classList.remove(ACTIVE_BODY_CLASS);
     return panel;
 };
 

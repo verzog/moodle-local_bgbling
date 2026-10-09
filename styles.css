@@ -83,12 +83,15 @@ body:has(.login-layout-left) .local-bgbling:not(.local-bgbling-contained) {
     }
 }
 
-/* Boost and its child themes: let the layer show through the page background on targeted pages. */
-body.local-bgbling-active,
-body.local-bgbling-active #page-wrapper,
-body.local-bgbling-active #page,
-body.local-bgbling-active #topofscroll,
-body.local-bgbling-active.pagelayout-login #page,
-body.local-bgbling-active.pagelayout-login #region-main {
+/*
+ * Boost and its child themes: let the layer show through the page background on targeted pages.
+ * Not on the Moodle 5.2+ split login page, where the video only fills the side panel.
+ */
+body.local-bgbling-active:not(:has(.login-layout-left)),
+body.local-bgbling-active:not(:has(.login-layout-left)) #page-wrapper,
+body.local-bgbling-active:not(:has(.login-layout-left)) #page,
+body.local-bgbling-active:not(:has(.login-layout-left)) #topofscroll,
+body.local-bgbling-active.pagelayout-login:not(:has(.login-layout-left)) #page,
+body.local-bgbling-active.pagelayout-login:not(:has(.login-layout-left)) #region-main {
     background: transparent;
 }
