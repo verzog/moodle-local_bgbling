@@ -107,6 +107,23 @@ final class background_test extends \advanced_testcase {
     }
 
     /**
+     * Ticking Dashboard does not put the background on My courses, which shares its page type.
+     */
+    public function test_should_show_dashboard_not_mycourses(): void {
+        $this->resetAfterTest();
+        set_config('enabled', 1, 'local_bgbling');
+        set_config('source', background::SOURCE_URL, 'local_bgbling');
+        set_config('videourl', 'https://vimeo.com/76979871', 'local_bgbling');
+        set_config('areas', 'dashboard', 'local_bgbling');
+        $this->assertTrue(background::should_show($this->make_page('my-index', 'mydashboard')));
+        $this->assertFalse(background::should_show($this->make_page('my-index', 'mycourses')));
+
+        // A matching extra page type still shows it, with the default settings.
+        set_config('pagetypes', 'my-index', 'local_bgbling');
+        $this->assertTrue(background::should_show($this->make_page('my-index', 'mycourses')));
+    }
+
+    /**
      * The poster URL comes from the poster file area.
      */
     public function test_get_poster_url(): void {
@@ -192,6 +209,13 @@ final class background_test extends \advanced_testcase {
         $this->assertSame('course', background::get_area($this->make_page('course-view-topics', 'course')));
         $this->assertNull(background::get_area($this->make_page('user-profile', 'standard')));
 
+        // Moodle gives the dashboard and My courses the same page type; the layout tells them apart.
+        set_config('areas', 'dashboard,mycourses', 'local_bgbling');
+        $this->assertSame('dashboard', background::get_area($this->make_page('my-index', 'mydashboard')));
+        $this->assertSame('mycourses', background::get_area($this->make_page('my-index', 'mycourses')));
+        set_config('areas', 'mycourses', 'local_bgbling');
+        $this->assertNull(background::get_area($this->make_page('my-index', 'mydashboard')), 'Dashboard not ticked.');
+
         // Shown only through a custom page type: the location's own settings do not apply.
         set_config('areas', 'login', 'local_bgbling');
         set_config('pagetypes', 'my-*', 'local_bgbling');
@@ -225,6 +249,8 @@ final class background_test extends \advanced_testcase {
         $this->assertSame('Login credit', background::get_caption('login'));
         $this->store_file(background::AREA_POSTER . '_login', 'login.jpg');
         $this->assertStringEndsWith('/login.jpg', background::get_poster_url('login')->out(false));
+
+        $this->assertSame(['login'], background::areas_with_own_video());
 
         // Other locations and custom page types keep the default.
         $this->assertSame(video_source::TYPE_VIMEO, background::get_source('dashboard')->type);

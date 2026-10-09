@@ -53,6 +53,7 @@ $string['overlaycolour'] = 'Tint colour';
 $string['overlaycolour_desc'] = 'A colour layer drawn over the video, so text on the page stays readable.';
 $string['overlayopacity'] = 'Tint strength';
 $string['overlayopacity_desc'] = 'How strongly the tint colour covers the video. 0% turns the tint off.';
+$string['ownvideonotice'] = 'These locations use their own video, set on their own settings pages, so changing the video here does not affect them: {$a}.';
 $string['pagesheading'] = 'Where to show it';
 $string['pagetypes'] = 'Additional page types';
 $string['pagetypes_desc'] = 'For advanced use: extra Moodle page types to show the background on, one per line, for example <code>user-profile</code>. End a line with * to match every page type that starts with it, for example <code>mod-forum-*</code>. The page type is the page\'s body ID without the leading <code>page-</code>.';
