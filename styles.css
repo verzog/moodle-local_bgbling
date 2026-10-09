@@ -163,9 +163,14 @@ body.local-bgbling-active.local-bgbling-text-dark .secondary-navigation .nav {
     pointer-events: auto;
 }
 
-/* Inside the Moodle 5.2+ login side panel. */
-.local-bgbling-host > .local-bgbling-controls {
+/* Inside the Moodle 5.2+ login side panel. Until the script moves them there, keep them out of sight. */
+body:has(.login-layout-left) .local-bgbling-controls {
+    visibility: hidden;
+}
+
+body .local-bgbling-host > .local-bgbling-controls {
     position: absolute;
+    visibility: visible;
 }
 
 .local-bgbling-caption {

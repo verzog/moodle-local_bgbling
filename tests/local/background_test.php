@@ -185,10 +185,17 @@ final class background_test extends \advanced_testcase {
      * Pages belong to the first named area whose page types match; custom page types belong to none.
      */
     public function test_get_area(): void {
+        $this->resetAfterTest();
+        set_config('areas', 'login,dashboard,course', 'local_bgbling');
         $this->assertSame('login', background::get_area($this->make_page('login-index')));
         $this->assertSame('dashboard', background::get_area($this->make_page('my-index', 'mydashboard')));
         $this->assertSame('course', background::get_area($this->make_page('course-view-topics', 'course')));
         $this->assertNull(background::get_area($this->make_page('user-profile', 'standard')));
+
+        // Shown only through a custom page type: the location's own settings do not apply.
+        set_config('areas', 'login', 'local_bgbling');
+        set_config('pagetypes', 'my-*', 'local_bgbling');
+        $this->assertNull(background::get_area($this->make_page('my-index', 'mydashboard')));
     }
 
     /**
@@ -197,6 +204,7 @@ final class background_test extends \advanced_testcase {
      */
     public function test_location_video_poster_and_caption(): void {
         $this->resetAfterTest();
+        set_config('areas', 'login,dashboard', 'local_bgbling');
         set_config('source', background::SOURCE_URL, 'local_bgbling');
         set_config('videourl', 'https://vimeo.com/76979871', 'local_bgbling');
         set_config('caption', '<p>Default credit</p>', 'local_bgbling');
@@ -281,6 +289,9 @@ final class background_test extends \advanced_testcase {
         $this->assertStringNotContainsString('<script', $caption);
         $this->assertStringNotContainsString('<strong', $caption);
         $this->assertStringNotContainsString('javascript:', $caption);
+
+        set_config('caption', '<p>Video by Jane</p><p>CC BY 4.0<br>2026</p>', 'local_bgbling');
+        $this->assertSame('Video by Jane CC BY 4.0 2026', background::get_caption(), 'Paragraphs and breaks become spaces.');
     }
 
     /**

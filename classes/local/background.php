@@ -107,17 +107,18 @@ final class background {
     }
 
     /**
-     * Returns the named area a page belongs to, whether or not that area is ticked.
+     * Returns the ticked named area a page belongs to.
      *
-     * Pages shown only because of the additional page types setting belong to no area,
-     * so they use the default settings.
+     * Pages shown only because of the additional page types setting belong to no area, even when
+     * their page type is also a named area that is not ticked, so they use the default settings.
      *
      * @param moodle_page $page
      * @return string|null An AREAS key, or null.
      */
     public static function get_area(moodle_page $page): ?string {
+        $ticked = array_map('trim', explode(',', (string) get_config(self::COMPONENT, 'areas')));
         foreach (self::AREAS as $area => $patterns) {
-            if (self::page_type_matches($page->pagetype, $patterns)) {
+            if (in_array($area, $ticked, true) && self::page_type_matches($page->pagetype, $patterns)) {
                 return $area;
             }
         }
@@ -264,8 +265,11 @@ final class background {
      */
     public static function get_caption(?string $area = null): string {
         $html = (string) get_config(self::COMPONENT, 'caption' . self::video_suffix($area));
-        // Links only: the note is a small credit line, not a place for layout or images.
+        // Links only: the note is a small credit line, not a place for layout or images. Line breaks and
+        // block ends become spaces first, so separate paragraphs do not run their words together.
+        $html = preg_replace('~<(br|/p|/div|/li|/h[1-6])\b[^>]*>~i', ' ', $html);
         $html = strip_tags($html, '<a>');
+        $html = preg_replace('/\s+/u', ' ', $html);
         // The editor saves an "empty" note as <p>&nbsp;</p>; a non-breaking space is not something trim() removes.
         $text = str_replace("\u{00A0}", ' ', html_entity_decode(strip_tags($html), ENT_QUOTES | ENT_HTML5, 'UTF-8'));
         if (trim($text) === '') {
