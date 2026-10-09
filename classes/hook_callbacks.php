@@ -41,7 +41,7 @@ final class hook_callbacks {
         $page = $hook->renderer->get_page();
         if (background::should_show($page)) {
             $page->add_body_class(background::BODY_CLASS);
-            $textcolour = background::get_text_colour();
+            $textcolour = background::get_text_colour(background::get_area($page));
             if ($textcolour !== background::TEXT_THEME) {
                 $page->add_body_class('local-bgbling-text-' . $textcolour);
             }
@@ -75,19 +75,24 @@ final class hook_callbacks {
         if (!background::should_show($page)) {
             return;
         }
-        $source = background::get_source();
-        $poster = background::get_poster_url();
-        $opacity = background::get_overlay_opacity();
+        $area = background::get_area($page);
+        $source = background::get_source($area);
+        $poster = background::get_poster_url($area);
+        $opacity = background::get_overlay_opacity($area);
+        $caption = background::get_caption($area);
+        $hassound = background::sound_allowed($source, $area);
 
         $context = [
             'isnative' => $source->is_native(),
             'src' => $source->url->out(false),
             'posterurl' => $poster ? $poster->out(false) : '',
             'hasoverlay' => $opacity > 0,
-            'overlaycolour' => background::get_overlay_colour(),
+            'overlaycolour' => background::get_overlay_colour($area),
             'overlayopacity' => sprintf('%.2F', $opacity),
             'respectmotion' => background::respect_reduced_motion(),
-            'hassound' => background::sound_allowed($source),
+            'hassound' => $hassound,
+            'caption' => $caption,
+            'hascontrols' => $hassound || $caption !== '',
         ];
         $hook->add_html($hook->renderer->render_from_template('local_bgbling/background', $context));
 

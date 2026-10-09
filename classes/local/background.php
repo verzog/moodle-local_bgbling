@@ -103,7 +103,84 @@ final class background {
         if (!self::page_type_matches($page->pagetype, $patterns)) {
             return false;
         }
-        return self::get_source() !== null;
+        return self::get_source(self::get_area($page)) !== null;
+    }
+
+    /**
+     * Returns the ticked named area a page belongs to.
+     *
+     * Pages shown only because of the additional page types setting belong to no area, even when
+     * their page type is also a named area that is not ticked, so they use the default settings.
+     *
+     * @param moodle_page $page
+     * @return string|null An AREAS key, or null.
+     */
+    public static function get_area(moodle_page $page): ?string {
+        $ticked = array_map('trim', explode(',', (string) get_config(self::COMPONENT, 'areas')));
+        foreach (self::AREAS as $area => $patterns) {
+            if (in_array($area, $ticked, true) && self::page_type_matches($page->pagetype, $patterns)) {
+                return $area;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Whether a location has its own video rather than using the default.
+     *
+     * The poster and attribution note go with the video, so they come from the same place.
+     *
+     * @param string|null $area An AREAS key, or null for the default settings.
+     * @return bool
+     */
+    public static function has_own_video(?string $area): bool {
+        if ($area === null || !isset(self::AREAS[$area])) {
+            return false;
+        }
+        $source = get_config(self::COMPONENT, 'source_' . $area);
+        return $source === self::SOURCE_URL || $source === self::SOURCE_FILE;
+    }
+
+    /**
+     * Returns the settings name suffix for the video, poster and note to use in a location.
+     *
+     * @param string|null $area An AREAS key, or null for the default settings.
+     * @return string Empty for the defaults, otherwise an underscore and the area key.
+     */
+    private static function video_suffix(?string $area): string {
+        return self::has_own_video($area) ? '_' . $area : '';
+    }
+
+    /**
+     * Reads a setting a location may override, falling back to the default when it is left as "Use default".
+     *
+     * @param string $name Setting name without a location suffix.
+     * @param string|null $area An AREAS key, or null for the default settings.
+     * @return string
+     */
+    private static function get_setting(string $name, ?string $area): string {
+        if ($area !== null && isset(self::AREAS[$area])) {
+            $value = get_config(self::COMPONENT, $name . '_' . $area);
+            if ($value !== false && $value !== '') {
+                return (string) $value;
+            }
+        }
+        $value = get_config(self::COMPONENT, $name);
+        return $value === false ? '' : (string) $value;
+    }
+
+    /**
+     * Returns every file area the plugin serves: the default video and poster, and one pair per location.
+     *
+     * @return string[]
+     */
+    public static function file_areas(): array {
+        $areas = [self::AREA_VIDEO, self::AREA_POSTER];
+        foreach (array_keys(self::AREAS) as $area) {
+            $areas[] = self::AREA_VIDEO . '_' . $area;
+            $areas[] = self::AREA_POSTER . '_' . $area;
+        }
+        return $areas;
     }
 
     /**
@@ -151,39 +228,69 @@ final class background {
     }
 
     /**
-     * Returns the configured video source, or null if none is usable.
+     * Returns the video source for a location, or null if none is usable.
      *
+     * @param string|null $area An AREAS key, or null for the default settings.
      * @return video_source|null
      */
-    public static function get_source(): ?video_source {
+    public static function get_source(?string $area = null): ?video_source {
+        $suffix = self::video_suffix($area);
         $config = get_config(self::COMPONENT);
-        if (($config->source ?? self::SOURCE_URL) === self::SOURCE_FILE) {
-            $file = self::get_stored_file(self::AREA_VIDEO);
+        if (($config->{'source' . $suffix} ?? self::SOURCE_URL) === self::SOURCE_FILE) {
+            $file = self::get_stored_file(self::AREA_VIDEO . $suffix);
             if ($file === null) {
                 return null;
             }
             return video_source::from_file(self::file_url($file), $file->get_mimetype());
         }
-        return video_source::from_url($config->videourl ?? '');
+        return video_source::from_url($config->{'videourl' . $suffix} ?? '');
     }
 
     /**
-     * Returns the poster image URL, or null if none is uploaded.
+     * Returns the poster image URL for a location, or null if none is uploaded.
      *
+     * @param string|null $area An AREAS key, or null for the default settings.
      * @return moodle_url|null
      */
-    public static function get_poster_url(): ?moodle_url {
-        $file = self::get_stored_file(self::AREA_POSTER);
+    public static function get_poster_url(?string $area = null): ?moodle_url {
+        $file = self::get_stored_file(self::AREA_POSTER . self::video_suffix($area));
         return $file === null ? null : self::file_url($file);
+    }
+
+    /**
+     * Returns the attribution note for a location, cleaned to text and links only.
+     *
+     * @param string|null $area An AREAS key, or null for the default settings.
+     * @return string Safe HTML, or an empty string when there is no note.
+     */
+    public static function get_caption(?string $area = null): string {
+        $html = (string) get_config(self::COMPONENT, 'caption' . self::video_suffix($area));
+        // Links only: the note is a small credit line, not a place for layout or images. Line breaks and
+        // block ends become spaces first, so separate paragraphs do not run their words together.
+        $html = preg_replace('~<(br|/p|/div|/li|/h[1-6])\b[^>]*>~i', ' ', $html);
+        $html = strip_tags($html, '<a>');
+        $html = preg_replace('/\s+/u', ' ', $html);
+        // The editor saves an "empty" note as <p>&nbsp;</p>; a non-breaking space is not something trim() removes.
+        $text = str_replace("\u{00A0}", ' ', html_entity_decode(strip_tags($html), ENT_QUOTES | ENT_HTML5, 'UTF-8'));
+        if (trim($text) === '') {
+            return '';
+        }
+        $html = format_text($html, FORMAT_HTML, [
+            'context' => context_system::instance(),
+            'filter' => false,
+            'para' => false,
+        ]);
+        return trim($html);
     }
 
     /**
      * Returns the overlay colour, falling back to black if the setting is not a plain colour value.
      *
+     * @param string|null $area An AREAS key, or null for the default settings.
      * @return string
      */
-    public static function get_overlay_colour(): string {
-        $colour = trim((string) get_config(self::COMPONENT, 'overlaycolour'));
+    public static function get_overlay_colour(?string $area = null): string {
+        $colour = trim(self::get_setting('overlaycolour', $area));
         $hex = '/^#[0-9a-f]{3,8}$/i';
         $named = '/^[a-z]{3,20}$/i';
         $functional = '/^(rgb|hsl)a?\([0-9.,%\s\/]+\)$/i';
@@ -196,10 +303,11 @@ final class background {
     /**
      * Returns the overlay opacity as a fraction between 0 and 0.9.
      *
+     * @param string|null $area An AREAS key, or null for the default settings.
      * @return float
      */
-    public static function get_overlay_opacity(): float {
-        $percent = (int) get_config(self::COMPONENT, 'overlayopacity');
+    public static function get_overlay_opacity(?string $area = null): float {
+        $percent = (int) self::get_setting('overlayopacity', $area);
         return max(0, min(90, $percent)) / 100;
     }
 
@@ -218,10 +326,11 @@ final class background {
     /**
      * Returns the colour scheme for page titles that sit directly on the video.
      *
+     * @param string|null $area An AREAS key, or null for the default settings.
      * @return string One of the TEXT_ constants; light when never saved.
      */
-    public static function get_text_colour(): string {
-        $setting = get_config(self::COMPONENT, 'textcolour');
+    public static function get_text_colour(?string $area = null): string {
+        $setting = self::get_setting('textcolour', $area);
         if (in_array($setting, [self::TEXT_DARK, self::TEXT_THEME], true)) {
             return $setting;
         }
@@ -234,10 +343,11 @@ final class background {
      * Only uploaded files and direct links: YouTube and Vimeo players stay muted.
      *
      * @param video_source $source
+     * @param string|null $area An AREAS key, or null for the default settings.
      * @return bool
      */
-    public static function sound_allowed(video_source $source): bool {
-        return $source->is_native() && !empty(get_config(self::COMPONENT, 'allowsound'));
+    public static function sound_allowed(video_source $source, ?string $area = null): bool {
+        return $source->is_native() && !empty(self::get_setting('allowsound', $area));
     }
 
     /**

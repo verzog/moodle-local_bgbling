@@ -27,8 +27,14 @@ use local_bgbling\local\background;
 defined('MOODLE_INTERNAL') || die();
 
 if ($hassiteconfig) {
-    $settings = new admin_settingpage('local_bgbling', new lang_string('pluginname', 'local_bgbling'));
-    $ADMIN->add('localplugins', $settings);
+    $ADMIN->add('localplugins', new admin_category(
+        'local_bgbling_category',
+        new lang_string('pluginname', 'local_bgbling')
+    ));
+
+    // General settings, which are also the defaults for every location.
+    $settings = new admin_settingpage('local_bgbling', new lang_string('generalsettings', 'local_bgbling'));
+    $ADMIN->add('local_bgbling_category', $settings);
 
     if ($ADMIN->fulltree) {
         $settings->add(new admin_setting_configcheckbox(
@@ -108,6 +114,13 @@ if ($hassiteconfig) {
                 'maxfiles' => 1,
                 'accepted_types' => ['web_image'],
             ]
+        ));
+
+        $settings->add(new admin_setting_confightmleditor(
+            'local_bgbling/caption',
+            new lang_string('caption', 'local_bgbling'),
+            new lang_string('caption_desc', 'local_bgbling'),
+            ''
         ));
 
         if (!background::get_stored_file(background::AREA_POSTER)) {
@@ -201,6 +214,124 @@ if ($hassiteconfig) {
             new lang_string('customcss', 'local_bgbling'),
             new lang_string('customcss_desc', 'local_bgbling'),
             ''
+        ));
+    }
+    // One page per location. Anything left as "Use default" comes from the general settings.
+    $usedefault = new lang_string('usedefault', 'local_bgbling');
+    $opacities = ['' => $usedefault];
+    foreach (range(0, 90, 10) as $percent) {
+        $opacities[$percent] = $percent . '%';
+    }
+    $maxmegabytes = (int) get_config('local_bgbling', 'maxfilesize') ?: 20;
+
+    foreach (array_keys(background::AREAS) as $area) {
+        $page = new admin_settingpage('local_bgbling_' . $area, new lang_string('area_' . $area, 'local_bgbling'));
+        $ADMIN->add('local_bgbling_category', $page);
+        if (!$ADMIN->fulltree) {
+            continue;
+        }
+        $name = 'local_bgbling/%s_' . $area;
+
+        $page->add(new admin_setting_heading(
+            sprintf($name, 'heading'),
+            '',
+            new lang_string('locationsettings_desc', 'local_bgbling', new lang_string('area_' . $area, 'local_bgbling'))
+        ));
+
+        $page->add(new admin_setting_configselect(
+            sprintf($name, 'source'),
+            new lang_string('source', 'local_bgbling'),
+            new lang_string('locationsource_desc', 'local_bgbling'),
+            '',
+            [
+                '' => new lang_string('source_default', 'local_bgbling'),
+                background::SOURCE_URL => new lang_string('source_url', 'local_bgbling'),
+                background::SOURCE_FILE => new lang_string('source_file', 'local_bgbling'),
+            ]
+        ));
+
+        $page->add(new \local_bgbling\admin\setting_videourl(
+            sprintf($name, 'videourl'),
+            new lang_string('videourl', 'local_bgbling'),
+            new lang_string('videourl_desc', 'local_bgbling')
+        ));
+        $page->hide_if(sprintf($name, 'videourl'), sprintf($name, 'source'), 'neq', background::SOURCE_URL);
+
+        $page->add(new admin_setting_configstoredfile(
+            sprintf($name, 'videofile'),
+            new lang_string('videofile', 'local_bgbling'),
+            new lang_string('videofile_desc', 'local_bgbling'),
+            background::AREA_VIDEO . '_' . $area,
+            0,
+            [
+                'maxfiles' => 1,
+                'maxbytes' => $maxmegabytes * 1024 * 1024,
+                'accepted_types' => ['.mp4', '.m4v', '.webm', '.ogv'],
+            ]
+        ));
+        $page->hide_if(sprintf($name, 'videofile'), sprintf($name, 'source'), 'neq', background::SOURCE_FILE);
+
+        $page->add(new admin_setting_configstoredfile(
+            sprintf($name, 'poster'),
+            new lang_string('poster', 'local_bgbling'),
+            new lang_string('locationposter_desc', 'local_bgbling'),
+            background::AREA_POSTER . '_' . $area,
+            0,
+            [
+                'maxfiles' => 1,
+                'accepted_types' => ['web_image'],
+            ]
+        ));
+        $page->hide_if(sprintf($name, 'poster'), sprintf($name, 'source'), 'eq', '');
+
+        $page->add(new admin_setting_confightmleditor(
+            sprintf($name, 'caption'),
+            new lang_string('caption', 'local_bgbling'),
+            new lang_string('locationcaption_desc', 'local_bgbling'),
+            ''
+        ));
+        $page->hide_if(sprintf($name, 'caption'), sprintf($name, 'source'), 'eq', '');
+
+        $page->add(new admin_setting_configcolourpicker(
+            sprintf($name, 'overlaycolour'),
+            new lang_string('overlaycolour', 'local_bgbling'),
+            new lang_string('locationoverlaycolour_desc', 'local_bgbling'),
+            '',
+            null,
+            false
+        ));
+
+        $page->add(new admin_setting_configselect(
+            sprintf($name, 'overlayopacity'),
+            new lang_string('overlayopacity', 'local_bgbling'),
+            new lang_string('overlayopacity_desc', 'local_bgbling'),
+            '',
+            $opacities
+        ));
+
+        $page->add(new admin_setting_configselect(
+            sprintf($name, 'textcolour'),
+            new lang_string('textcolour', 'local_bgbling'),
+            new lang_string('textcolour_desc', 'local_bgbling'),
+            '',
+            [
+                '' => $usedefault,
+                background::TEXT_LIGHT => new lang_string('textcolour_light', 'local_bgbling'),
+                background::TEXT_DARK => new lang_string('textcolour_dark', 'local_bgbling'),
+                background::TEXT_THEME => new lang_string('textcolour_theme', 'local_bgbling'),
+            ]
+        ));
+
+        $page->add(new admin_setting_configselect(
+            sprintf($name, 'allowsound'),
+            new lang_string('allowsound', 'local_bgbling'),
+            new lang_string('allowsound_desc', 'local_bgbling'),
+            '',
+            [
+                '' => $usedefault,
+                1 => new lang_string('yes'),
+                0 => new lang_string('no'),
+            ]
         ));
     }
 }

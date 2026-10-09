@@ -143,12 +143,50 @@ body.local-bgbling-active.local-bgbling-text-dark .secondary-navigation .nav {
     --bs-nav-tabs-link-active-color: #1d2125;
 }
 
-/* Sound button: outside the decorative layer so it can be clicked and reached by keyboard. */
-.local-bgbling-sound {
+/*
+ * Sound button and attribution note, in the bottom-left corner of the background. They sit outside the
+ * decorative layer so they can be clicked, reached by keyboard and read by screen readers.
+ */
+.local-bgbling-controls {
     position: fixed;
     bottom: 1rem;
     left: 1rem;
     z-index: 1030;
+    display: flex;
+    align-items: flex-end;
+    gap: 0.5rem;
+    max-width: calc(100% - 2rem);
+    pointer-events: none;
+}
+
+.local-bgbling-controls > * {
+    pointer-events: auto;
+}
+
+/* Inside the Moodle 5.2+ login side panel. Until the script moves them there, keep them out of sight. */
+body:has(.login-layout-left) .local-bgbling-controls {
+    visibility: hidden;
+}
+
+body .local-bgbling-host > .local-bgbling-controls {
+    position: absolute;
+    visibility: visible;
+}
+
+.local-bgbling-caption {
+    max-width: 40em;
+    padding: 0.25rem 0.5rem;
+    color: #fff;
+    background-color: rgba(0, 0, 0, 0.6);
+    border-radius: 0.25rem;
+}
+
+.local-bgbling-caption a {
+    color: #fff;
+    text-decoration: underline;
+}
+
+.local-bgbling-sound {
     opacity: 0.8;
 }
 

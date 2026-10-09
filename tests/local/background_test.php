@@ -182,6 +182,130 @@ final class background_test extends \advanced_testcase {
     }
 
     /**
+     * Pages belong to the first named area whose page types match; custom page types belong to none.
+     */
+    public function test_get_area(): void {
+        $this->resetAfterTest();
+        set_config('areas', 'login,dashboard,course', 'local_bgbling');
+        $this->assertSame('login', background::get_area($this->make_page('login-index')));
+        $this->assertSame('dashboard', background::get_area($this->make_page('my-index', 'mydashboard')));
+        $this->assertSame('course', background::get_area($this->make_page('course-view-topics', 'course')));
+        $this->assertNull(background::get_area($this->make_page('user-profile', 'standard')));
+
+        // Shown only through a custom page type: the location's own settings do not apply.
+        set_config('areas', 'login', 'local_bgbling');
+        set_config('pagetypes', 'my-*', 'local_bgbling');
+        $this->assertNull(background::get_area($this->make_page('my-index', 'mydashboard')));
+    }
+
+    /**
+     * A location uses the default video, poster and note unless it has its own video,
+     * and then uses its own for all three.
+     */
+    public function test_location_video_poster_and_caption(): void {
+        $this->resetAfterTest();
+        set_config('areas', 'login,dashboard', 'local_bgbling');
+        set_config('source', background::SOURCE_URL, 'local_bgbling');
+        set_config('videourl', 'https://vimeo.com/76979871', 'local_bgbling');
+        set_config('caption', '<p>Default credit</p>', 'local_bgbling');
+        $this->store_file(background::AREA_POSTER, 'default.jpg');
+        // Location settings are ignored while the location still uses the default video.
+        set_config('videourl_login', 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', 'local_bgbling');
+        set_config('caption_login', 'Login credit', 'local_bgbling');
+
+        $this->assertFalse(background::has_own_video('login'));
+        $this->assertSame(video_source::TYPE_VIMEO, background::get_source('login')->type);
+        $this->assertStringEndsWith('/default.jpg', background::get_poster_url('login')->out(false));
+        $this->assertSame('Default credit', background::get_caption('login'));
+
+        set_config('source_login', background::SOURCE_URL, 'local_bgbling');
+        $this->assertTrue(background::has_own_video('login'));
+        $this->assertSame(video_source::TYPE_YOUTUBE, background::get_source('login')->type);
+        $this->assertNull(background::get_poster_url('login'), 'Own video, no own poster: none.');
+        $this->assertSame('Login credit', background::get_caption('login'));
+        $this->store_file(background::AREA_POSTER . '_login', 'login.jpg');
+        $this->assertStringEndsWith('/login.jpg', background::get_poster_url('login')->out(false));
+
+        // Other locations and custom page types keep the default.
+        $this->assertSame(video_source::TYPE_VIMEO, background::get_source('dashboard')->type);
+        $this->assertSame(video_source::TYPE_VIMEO, background::get_source(null)->type);
+
+        // An uploaded file for the location comes from its own file area.
+        set_config('source_login', background::SOURCE_FILE, 'local_bgbling');
+        $this->assertNull(background::get_source('login'), 'No file uploaded for the location yet.');
+        $this->store_file(background::AREA_VIDEO . '_login', 'login.webm');
+        $this->assertStringContainsString('/local_bgbling/video_login/', background::get_source('login')->url->out(false));
+    }
+
+    /**
+     * Tint, text colour and sound fall back to the default when a location leaves them as "Use default".
+     */
+    public function test_location_overrides(): void {
+        $this->resetAfterTest();
+        set_config('overlaycolour', '#112233', 'local_bgbling');
+        set_config('overlayopacity', 40, 'local_bgbling');
+        set_config('textcolour', background::TEXT_LIGHT, 'local_bgbling');
+        set_config('allowsound', 1, 'local_bgbling');
+        foreach (['overlaycolour', 'overlayopacity', 'textcolour', 'allowsound'] as $name) {
+            set_config($name . '_dashboard', '', 'local_bgbling');
+        }
+        $direct = video_source::from_url('https://cdn.example.com/loop.mp4');
+
+        $this->assertSame('#112233', background::get_overlay_colour('dashboard'));
+        $this->assertEqualsWithDelta(0.4, background::get_overlay_opacity('dashboard'), 0.001);
+        $this->assertSame(background::TEXT_LIGHT, background::get_text_colour('dashboard'));
+        $this->assertTrue(background::sound_allowed($direct, 'dashboard'));
+
+        set_config('overlaycolour_dashboard', '#ffffff', 'local_bgbling');
+        set_config('overlayopacity_dashboard', 0, 'local_bgbling');
+        set_config('textcolour_dashboard', background::TEXT_DARK, 'local_bgbling');
+        set_config('allowsound_dashboard', 0, 'local_bgbling');
+        $this->assertSame('#ffffff', background::get_overlay_colour('dashboard'));
+        $this->assertEqualsWithDelta(0.0, background::get_overlay_opacity('dashboard'), 0.001, 'Zero is a real choice.');
+        $this->assertSame(background::TEXT_DARK, background::get_text_colour('dashboard'));
+        $this->assertFalse(background::sound_allowed($direct, 'dashboard'));
+
+        // The defaults themselves are unchanged.
+        $this->assertSame('#112233', background::get_overlay_colour('login'));
+        $this->assertTrue(background::sound_allowed($direct, null));
+    }
+
+    /**
+     * The attribution note keeps text and links, and nothing else.
+     */
+    public function test_get_caption_cleaning(): void {
+        $this->resetAfterTest();
+        $this->assertSame('', background::get_caption());
+        set_config('caption', '<p>&nbsp;</p>', 'local_bgbling');
+        $this->assertSame('', background::get_caption(), 'An empty editor paragraph is no note.');
+
+        set_config('caption', '<p><strong>Video</strong> by <a href="https://example.com/jane">Jane</a>'
+            . '<img src="x.png" onerror="alert(1)"><script>alert(2)</script>'
+            . ' <a href="javascript:alert(3)">bad</a></p>', 'local_bgbling');
+        $caption = background::get_caption();
+        $this->assertStringContainsString('<a href="https://example.com/jane">Jane</a>', $caption);
+        $this->assertStringContainsString('Video by', $caption);
+        $this->assertStringNotContainsString('<img', $caption);
+        $this->assertStringNotContainsString('<script', $caption);
+        $this->assertStringNotContainsString('<strong', $caption);
+        $this->assertStringNotContainsString('javascript:', $caption);
+
+        set_config('caption', '<p>Video by Jane</p><p>CC BY 4.0<br>2026</p>', 'local_bgbling');
+        $this->assertSame('Video by Jane CC BY 4.0 2026', background::get_caption(), 'Paragraphs and breaks become spaces.');
+    }
+
+    /**
+     * The plugin serves the default video and poster areas and one pair per location.
+     */
+    public function test_file_areas(): void {
+        $areas = background::file_areas();
+        $this->assertContains('video', $areas);
+        $this->assertContains('poster_login', $areas);
+        $this->assertContains('video_course', $areas);
+        $this->assertCount(2 + 2 * count(background::AREAS), $areas);
+    }
+
+    /**
      * Stores a dummy file in one of the plugin's file areas.
      *
      * @param string $area
