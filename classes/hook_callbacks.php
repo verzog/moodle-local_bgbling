@@ -41,6 +41,10 @@ final class hook_callbacks {
         $page = $hook->renderer->get_page();
         if (background::should_show($page)) {
             $page->add_body_class(background::BODY_CLASS);
+            $textcolour = background::get_text_colour();
+            if ($textcolour !== background::TEXT_THEME) {
+                $page->add_body_class('local-bgbling-text-' . $textcolour);
+            }
         }
     }
 
@@ -83,6 +87,7 @@ final class hook_callbacks {
             'overlaycolour' => background::get_overlay_colour(),
             'overlayopacity' => sprintf('%.2F', $opacity),
             'respectmotion' => background::respect_reduced_motion(),
+            'hassound' => background::sound_allowed($source),
         ];
         $hook->add_html($hook->renderer->render_from_template('local_bgbling/background', $context));
 

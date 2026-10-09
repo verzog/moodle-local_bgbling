@@ -154,6 +154,34 @@ final class background_test extends \advanced_testcase {
     }
 
     /**
+     * The text colour defaults to light and only accepts known values.
+     */
+    public function test_get_text_colour(): void {
+        $this->resetAfterTest();
+        $this->assertSame(background::TEXT_LIGHT, background::get_text_colour(), 'Light when never saved.');
+        set_config('textcolour', background::TEXT_DARK, 'local_bgbling');
+        $this->assertSame(background::TEXT_DARK, background::get_text_colour());
+        set_config('textcolour', background::TEXT_THEME, 'local_bgbling');
+        $this->assertSame(background::TEXT_THEME, background::get_text_colour());
+        set_config('textcolour', 'purple', 'local_bgbling');
+        $this->assertSame(background::TEXT_LIGHT, background::get_text_colour());
+    }
+
+    /**
+     * Sound is only offered for native video, and only when the admin allows it.
+     */
+    public function test_sound_allowed(): void {
+        $this->resetAfterTest();
+        $direct = video_source::from_url('https://cdn.example.com/loop.mp4');
+        $youtube = video_source::from_url('https://www.youtube.com/watch?v=dQw4w9WgXcQ');
+
+        $this->assertFalse(background::sound_allowed($direct), 'Off by default.');
+        set_config('allowsound', 1, 'local_bgbling');
+        $this->assertTrue(background::sound_allowed($direct));
+        $this->assertFalse(background::sound_allowed($youtube), 'YouTube stays muted.');
+    }
+
+    /**
      * Stores a dummy file in one of the plugin's file areas.
      *
      * @param string $area
