@@ -68,6 +68,9 @@ function local_bgbling_pluginfile($course, $cm, $context, $filearea, $args, $for
         return false;
     }
 
+    // Video files can be large; do not hold the session lock while streaming.
+    \core\session\manager::write_close();
+
     $options['cacheability'] = 'public';
     $options['immutable'] = true;
     send_stored_file($file, YEARSECS, 0, $forcedownload, $options);

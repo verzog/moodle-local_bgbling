@@ -44,6 +44,7 @@ final class video_source_test extends \basic_testcase {
             'YouTube short link' => ['https://youtu.be/dQw4w9WgXcQ?si=abc', video_source::TYPE_YOUTUBE, $yt],
             'YouTube embed' => ['https://www.youtube.com/embed/dQw4w9WgXcQ', video_source::TYPE_YOUTUBE, $yt],
             'YouTube shorts' => ['https://www.youtube.com/shorts/dQw4w9WgXcQ', video_source::TYPE_YOUTUBE, $yt],
+            'YouTube over http' => ['http://www.youtube.com/watch?v=dQw4w9WgXcQ', video_source::TYPE_YOUTUBE, $yt],
             'YouTube nocookie' => ['https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ', video_source::TYPE_YOUTUBE, $yt],
             'Vimeo' => [
                 'https://vimeo.com/76979871',
@@ -114,6 +115,7 @@ final class video_source_test extends \basic_testcase {
             'YouTube ID injection' => ['https://youtu.be/dQw4w9WgXcQ"><script>'],
             'Vimeo non-numeric' => ['https://vimeo.com/about'],
             'Vimeo bad hash' => ['https://player.vimeo.com/video/76979871?h=zz"x'],
+            'HTTP file on an HTTPS site' => ['http://cdn.example.com/media/loop.mp4'],
             'Lookalike host' => ['https://youtube.com.example.com/watch?v=dQw4w9WgXcQ'],
         ];
     }

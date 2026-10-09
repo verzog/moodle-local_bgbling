@@ -123,7 +123,21 @@ final class video_source {
             // A YouTube address we could not get a video ID from (a channel, a playlist and so on).
             return null;
         }
+        if ($scheme === 'http' && self::site_uses_https()) {
+            // Browsers block http media on an https page (mixed content), so it would never play.
+            return null;
+        }
         return self::direct($url, $path);
+    }
+
+    /**
+     * Whether the Moodle site is served over https.
+     *
+     * @return bool
+     */
+    private static function site_uses_https(): bool {
+        global $CFG;
+        return str_starts_with(strtolower($CFG->wwwroot), 'https://');
     }
 
     /**

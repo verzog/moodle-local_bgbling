@@ -6,7 +6,7 @@ the dashboard, My courses, course pages, or any other page type you name.
 The video can be:
 
 - a file uploaded in the plugin settings (MP4 or WebM);
-- a direct link to a video file (`.mp4`, `.m4v`, `.webm`, `.ogv`);
+- a direct link to a video file (`.mp4`, `.m4v`, `.webm`, `.ogv`), using `https` if your site does;
 - a YouTube video (paste the normal watch, short or share link);
 - a Vimeo video (paste the normal video link, including unlisted links).
 
@@ -38,9 +38,10 @@ rather than being tied to one.
 - **Vimeo** videos use Vimeo's background player (`background=1`), which gives a clean,
   chromeless loop. As far as we know this only works for videos hosted on a paid Vimeo plan; on
   a free plan the player shows its controls.
-- **Privacy:** with YouTube or Vimeo, every visitor's browser (including on the login page,
-  before anyone logs in) connects to that service. Weigh this against your privacy policy, or
-  upload the video instead. The plugin itself stores no personal data.
+- **Privacy:** with YouTube, Vimeo or a direct link to a video on another website, every
+  visitor's browser (including on the login page, before anyone logs in) connects to that
+  service, which can see their IP address. Weigh this against your privacy policy, or upload the
+  video instead. The plugin itself stores no personal data.
 - **Mobile:** some mobile browsers refuse to autoplay embedded videos; the poster image covers
   that case.
 - **Theme compatibility:** pages showing the background get the body class

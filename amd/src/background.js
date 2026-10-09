@@ -48,9 +48,10 @@ const start = (root, media) => {
         return;
     }
     if (!media.getAttribute('src')) {
+        // Keep the poster in view until the embedded player has loaded.
+        media.addEventListener('load', () => root.classList.add(PLAYING_CLASS), {once: true});
         media.setAttribute('src', media.dataset.src);
     }
-    root.classList.add(PLAYING_CLASS);
 };
 
 /**

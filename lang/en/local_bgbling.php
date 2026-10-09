@@ -35,7 +35,7 @@ $string['customcss_desc'] = 'Extra CSS added only to the pages that show the bac
 $string['enabled'] = 'Enable background video';
 $string['enabled_desc'] = 'Show the background video on the pages selected below.';
 $string['iframetitle'] = 'Decorative background video';
-$string['invalidvideourl'] = 'Enter a YouTube or Vimeo video address, or a direct link to an .mp4, .m4v, .webm or .ogv file.';
+$string['invalidvideourl'] = 'Enter a YouTube or Vimeo video address, or a direct link to an .mp4, .m4v, .webm or .ogv file. On a site that uses https, direct links must also use https.';
 $string['maxfilesize'] = 'Maximum video file size';
 $string['maxfilesize_desc'] = 'The largest video file that can be uploaded. The video downloads on every page that shows it (browsers cache it after the first visit), so keep it short and well compressed. Save the settings after changing this before uploading.';
 $string['overlaycolour'] = 'Tint colour';
@@ -50,7 +50,7 @@ $string['poster'] = 'Poster image';
 $string['poster_desc'] = 'Optional still image shown while the video loads, if the browser blocks autoplay, for visitors who have asked their device to reduce motion, and on small screens when that option is on. Strongly recommended.';
 $string['posteronsmallscreens'] = 'Poster only on small screens';
 $string['posteronsmallscreens_desc'] = 'On screens narrower than 768 pixels (most phones), show the poster image instead of loading the video. This saves mobile data.';
-$string['privacy:metadata'] = 'The Background video plugin does not store any personal data. If a YouTube or Vimeo video is used, visitors\' browsers connect to that service to play it.';
+$string['privacy:metadata'] = 'The Background video plugin does not store any personal data. If a YouTube, Vimeo or externally hosted video is used, visitors\' browsers connect to that service to play it.';
 $string['source'] = 'Video source';
 $string['source_desc'] = 'Use a video address (YouTube, Vimeo or a direct video file link), or a video file uploaded here.';
 $string['source_file'] = 'Uploaded file';
@@ -63,5 +63,5 @@ $string['videourl_desc'] = 'Paste a normal YouTube or Vimeo video address (for e
 <ul>
 <li>YouTube videos play through youtube-nocookie.com. YouTube may briefly show its title or logo when the video starts and loops; this cannot be fully prevented.</li>
 <li>Vimeo videos use Vimeo\'s background player, which hides the controls. It needs a video on a paid Vimeo plan; on a free plan the player shows its controls.</li>
-<li>Privacy: with YouTube or Vimeo, every visitor\'s browser, including on the login page before they log in, connects to that service. Consider this against your privacy policy, or upload a file instead.</li>
+<li>Privacy: with YouTube, Vimeo or a direct link to a file on another website, every visitor\'s browser, including on the login page before they log in, connects to that service, which can see their IP address. Consider this against your privacy policy, or upload a file instead.</li>
 </ul>';
