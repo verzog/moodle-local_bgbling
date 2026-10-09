@@ -23,6 +23,11 @@ rather than being tied to one.
   the sound on. Browsers do not allow sound to start on its own, so the video starts muted; the
   choice is remembered in a cookie, and on later pages the sound returns on the first click or key
   press. YouTube and Vimeo stay muted.
+- **Different video per location:** the login page, site home, dashboard, My courses and course
+  pages can each have their own video, poster and attribution note, and their own tint, text
+  colour and sound setting. Anything left as "Use default" comes from the general settings.
+- **Attribution note:** a small credit line (text and links) in the corner of the background, for
+  example "Video by Jane Doe, CC BY 4.0".
 - **Tint:** a colour layer with adjustable strength (0–90%) over the video, so text stays
   readable.
 - **Poster image:** a still image shown while the video loads, if the browser blocks autoplay,
@@ -99,13 +104,16 @@ to complete the installation from the command line.
 
 ## Setting up
 
-Go to _Site administration > Plugins > Local plugins > Background video_:
+Go to _Site administration > Plugins > Local plugins > Background video > General settings_:
 
 1. Choose the video source and paste the address, or upload the file.
 2. Upload a poster image (recommended).
 3. Tick the pages to show it on.
 4. Adjust the tint so the page text is readable.
 5. Tick **Enable background video** and save.
+
+To use a different video somewhere, open that location's page under _Background video_ (for
+example _Dashboard_) and choose a video for it there.
 
 ## License
 

@@ -25,8 +25,8 @@
 defined('MOODLE_INTERNAL') || die();
 
 $plugin->component = 'local_bgbling';
-$plugin->version = 2026100902;
+$plugin->version = 2026100903;
 $plugin->requires = 2025100600;
 $plugin->supported = [501, 503];
 $plugin->maturity = MATURITY_ALPHA;
-$plugin->release = '0.1.2';
+$plugin->release = '0.2.0';

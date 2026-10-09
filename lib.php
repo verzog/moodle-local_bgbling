@@ -29,8 +29,9 @@ use local_bgbling\local\background;
  *
  * This deliberately does NOT call require_login(): the background shows on the login page,
  * where the visitor is not logged in yet. To keep that exception narrow, only the two
- * whitelisted file areas in the system context are served, both of which hold files an
- * administrator uploaded for public display, and only while the plugin is enabled.
+ * whitelisted file areas in the system context are served (the default video and poster, and one
+ * pair per location), all of which hold files an administrator uploaded for public display, and
+ * only while the plugin is enabled.
  *
  * URLs carry the file's time modified as a revision, so files can be cached for a year.
  *
@@ -50,7 +51,7 @@ function local_bgbling_pluginfile($course, $cm, $context, $filearea, $args, $for
     if ($context->contextlevel != CONTEXT_SYSTEM) {
         return false;
     }
-    if ($filearea !== background::AREA_VIDEO && $filearea !== background::AREA_POSTER) {
+    if (!in_array($filearea, background::file_areas(), true)) {
         return false;
     }
     if (!get_config('local_bgbling', 'enabled')) {

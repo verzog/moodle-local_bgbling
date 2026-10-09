@@ -33,6 +33,7 @@ const SELECTORS = {
     LOGIN_PANEL: '.login-layout-left',
     FRAME: '.local-bgbling-frame',
     SOUND_BUTTON: '.local-bgbling-sound',
+    CONTROLS: '.local-bgbling-controls',
 };
 
 /** Cookie holding the visitor's sound choice. */
@@ -218,6 +219,11 @@ const placeInLoginPanel = (root) => {
     panel.classList.add(HOST_CLASS);
     panel.prepend(root);
     root.classList.add(CONTAINED_CLASS);
+    // The sound button and attribution note belong with the video they control and credit.
+    const controls = document.querySelector(SELECTORS.CONTROLS);
+    if (controls) {
+        panel.append(controls);
+    }
     return panel;
 };
 

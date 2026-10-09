@@ -32,6 +32,8 @@
     * overlayopacity - opacity of the tint layer, 0 to 0.9
     * respectmotion - whether to hide the video for visitors who prefer reduced motion
     * hassound - whether to show the button that turns the video's sound on and off
+    * caption - attribution note, already cleaned to text and links; may be empty
+    * hascontrols - whether there is a sound button or a caption to show
 
     Example context (json):
     {
@@ -42,7 +44,9 @@
         "overlaycolour": "#000000",
         "overlayopacity": "0.40",
         "respectmotion": true,
-        "hassound": true
+        "hassound": true,
+        "caption": "Video by <a href=\"https://example.com/\">Jane Doe</a>, CC BY 4.0",
+        "hascontrols": true
     }
 }}
 <div class="local-bgbling{{#respectmotion}} local-bgbling-respectmotion{{/respectmotion}}" aria-hidden="true"{{#posterurl}} style="background-image: url('{{posterurl}}');"{{/posterurl}}>
@@ -62,10 +66,17 @@
     <div class="local-bgbling-overlay" style="background-color: {{overlaycolour}}; opacity: {{overlayopacity}};"></div>
     {{/hasoverlay}}
 </div>
-{{#hassound}}
-<button type="button" class="local-bgbling-sound btn btn-dark" aria-pressed="false"
-    aria-label="{{#str}}soundbutton, local_bgbling{{/str}}" title="{{#str}}soundbutton, local_bgbling{{/str}}" hidden>
-    <span class="local-bgbling-sound-off">{{#pix}}soundoff, local_bgbling{{/pix}}</span>
-    <span class="local-bgbling-sound-on">{{#pix}}soundon, local_bgbling{{/pix}}</span>
-</button>
-{{/hassound}}
+{{#hascontrols}}
+<div class="local-bgbling-controls">
+    {{#hassound}}
+    <button type="button" class="local-bgbling-sound btn btn-dark" aria-pressed="false"
+        aria-label="{{#str}}soundbutton, local_bgbling{{/str}}" title="{{#str}}soundbutton, local_bgbling{{/str}}" hidden>
+        <span class="local-bgbling-sound-off">{{#pix}}soundoff, local_bgbling{{/pix}}</span>
+        <span class="local-bgbling-sound-on">{{#pix}}soundon, local_bgbling{{/pix}}</span>
+    </button>
+    {{/hassound}}
+    {{#caption}}
+    <div class="local-bgbling-caption small">{{{caption}}}</div>
+    {{/caption}}
+</div>
+{{/hascontrols}}
