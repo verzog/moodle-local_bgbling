@@ -21,8 +21,11 @@ rather than being tied to one.
   readable.
 - **Poster image:** a still image shown while the video loads, if the browser blocks autoplay,
   for visitors who have asked their device to reduce motion, and (optionally) on phones.
-- **Accessibility:** the video is muted, decorative (hidden from screen readers), cannot be
-  clicked, and does not play for visitors with "reduce motion" turned on.
+- **Accessibility:** the video is muted, decorative (hidden from screen readers) and cannot be
+  clicked. By default it does not play for visitors whose device asks for reduced motion; an
+  admin setting can turn this off.
+- **Login page:** on Moodle 5.2 and later, where the login form sits beside a decorative side
+  panel, the video fills that panel behind its welcome text. On Moodle 5.1 it fills the page.
 - **Bandwidth:** nothing is downloaded until the page decides to play; uploaded files are sent
   with a one-year cache header and a new URL when replaced; there is an upload size cap; and
   phones can be set to show the poster only.
@@ -44,6 +47,9 @@ rather than being tied to one.
   video instead. The plugin itself stores no personal data.
 - **Mobile:** some mobile browsers refuse to autoplay embedded videos; the poster image covers
   that case.
+- **Video not playing?** Turning off animation effects in Windows (and similar settings on other
+  systems) makes the browser ask websites to reduce motion, so the video is skipped. With
+  debugging set to DEVELOPER, the browser console says why the video was not played.
 - **Theme compatibility:** pages showing the background get the body class
   `local-bgbling-active`. The plugin makes the page background transparent for Boost and its
   child themes. Other themes may paint opaque backgrounds elsewhere; use the Custom CSS setting

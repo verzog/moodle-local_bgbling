@@ -103,6 +103,21 @@ if ($hassiteconfig) {
             ]
         ));
 
+        if (!background::get_stored_file(background::AREA_POSTER)) {
+            $settings->add(new admin_setting_description(
+                'local_bgbling/noposterwarning',
+                '',
+                $OUTPUT->notification(get_string('noposterwarning', 'local_bgbling'), 'warning', false)
+            ));
+        }
+
+        $settings->add(new admin_setting_configcheckbox(
+            'local_bgbling/respectreducedmotion',
+            new lang_string('respectreducedmotion', 'local_bgbling'),
+            new lang_string('respectreducedmotion_desc', 'local_bgbling'),
+            1
+        ));
+
         $settings->add(new admin_setting_configcheckbox(
             'local_bgbling/posteronsmallscreens',
             new lang_string('posteronsmallscreens', 'local_bgbling'),
