@@ -97,7 +97,6 @@ if ($hassiteconfig) {
             new lang_string('allowsound_desc', 'local_bgbling'),
             0
         ));
-        $settings->hide_if('local_bgbling/allowsound', 'local_bgbling/source', 'eq', background::SOURCE_URL);
 
         $settings->add(new admin_setting_configstoredfile(
             'local_bgbling/poster',

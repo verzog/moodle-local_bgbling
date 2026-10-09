@@ -53,7 +53,12 @@ const HOST_CLASS = 'local-bgbling-host';
  *
  * @returns {Boolean} Whether the visitor last turned the sound on.
  */
-const soundPreferred = () => document.cookie.split('; ').includes(`${SOUND_COOKIE}=on`);
+const soundPreferred = () => {
+    // Browsers list the cookie with the most specific path first, so a Moodle site at a nested path
+    // reads its own choice rather than one from a site higher up on the same domain.
+    const cookie = document.cookie.split('; ').find((entry) => entry.startsWith(`${SOUND_COOKIE}=`));
+    return cookie === `${SOUND_COOKIE}=on`;
+};
 
 /**
  * Remembers the visitor's sound choice.
@@ -74,7 +79,7 @@ const rememberSound = (on) => {
  *
  * Browsers refuse to start a video with sound before the visitor has interacted with the page, so the
  * video always starts muted. If the visitor turned the sound on before, it comes back on their first
- * click or key press anywhere on the page.
+ * click, tap or key press anywhere on the page.
  *
  * @param {HTMLElement} media The video element.
  * @returns {Object} Callbacks for when the video starts and stops playing.
@@ -100,7 +105,7 @@ const setupSound = (media) => {
             // The button's own click handler decides.
             return;
         }
-        document.removeEventListener('pointerdown', unmuteOnFirstGesture, true);
+        document.removeEventListener('click', unmuteOnFirstGesture, true);
         document.removeEventListener('keydown', unmuteOnFirstGesture, true);
         if (soundPreferred() && !button.hidden) {
             setSound(true);
@@ -116,7 +121,9 @@ const setupSound = (media) => {
             if (navigator.userActivation && navigator.userActivation.hasBeenActive) {
                 setSound(true);
             } else {
-                document.addEventListener('pointerdown', unmuteOnFirstGesture, true);
+                // Click, not pointerdown: a touch only counts as user interaction once the finger lifts,
+                // and unmuting before that makes the browser pause the video instead.
+                document.addEventListener('click', unmuteOnFirstGesture, true);
                 document.addEventListener('keydown', unmuteOnFirstGesture, true);
             }
         },
